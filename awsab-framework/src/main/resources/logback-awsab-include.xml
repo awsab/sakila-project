@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ╔══════════════════════════════════════════════════════════════════════════╗
+  ║  AWSAB Framework — Logback include fragment                             ║
+  ║                                                                          ║
+  ║  Usage in consumer logback-spring.xml:                                  ║
+  ║                                                                          ║
+  ║    <include resource="logback-awsab-include.xml"/>                       ║
+  ║                                                                          ║
+  ║  This registers AwsabLogging.LogbackContextListener which:              ║
+  ║    • adds a structured JSON console appender (Loki/Grafana ready)       ║
+  ║    • optionally ships to Logstash TCP                                   ║
+  ║    • survives Logback context resets (Spring profile activation)        ║
+  ║                                                                          ║
+  ║  NOTE: If you rely on AwsabLoggingApplicationListener (automatic),      ║
+  ║  you do NOT need to include this file. Use it only when you need         ║
+  ║  to control logging layout declaratively in your own XML config.        ║
+  ╚══════════════════════════════════════════════════════════════════════════╝
+-->
+<included>
+
+    <!-- Pull app name and active profile from Spring Environment -->
+    <springProperty name="awsabAppName"
+                    source="spring.application.name"
+                    defaultValue="awsab-app"/>
+
+    <springProperty name="awsabActiveProfile"
+                    source="spring.profiles.active"
+                    defaultValue="default"/>
+
+    <springProperty name="awsabJsonEnabled"
+                    source="awsab.logging.json-format-enabled"
+                    defaultValue="true"/>
+
+    <springProperty name="awsabLogstashEnabled"
+                    source="awsab.logging.logstash-enabled"
+                    defaultValue="false"/>
+
+    <!--
+      Registers a reset-resistant LogbackContextListener.
+      On context start and after any Logback reset, re-attaches the
+      structured JSON appender (and optionally the Logstash appender).
+    -->
+    <contextListener class="com.me.learning.framework.logging.AwsabLogging$LogbackContextListener">
+        <fields>{"app":"${awsabAppName}","env":"${awsabActiveProfile}"}</fields>
+        <jsonFormatEnabled>${awsabJsonEnabled}</jsonFormatEnabled>
+        <logstashEnabled>${awsabLogstashEnabled}</logstashEnabled>
+    </contextListener>
+
+</included>
+

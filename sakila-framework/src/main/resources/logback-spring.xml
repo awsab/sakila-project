@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  eVisa Framework — Logback Configuration
+  ────────────────────────────────────────
+  Outputs structured JSON to STDOUT using logstash-logback-encoder.
+  Every log line includes MDC fields injected by MdcLoggingFilter:
+    traceId, spanId, requestId, method, path, clientIp
+
+  The OTel Java agent also injects trace_id and span_id into MDC
+  automatically — this config picks those up too.
+
+  Loki scrapes the OTel Collector log pipeline which reads STDOUT
+  from the Podman container — no file appender needed.
+-->
+<configuration scan="true" scanPeriod="30 seconds">
+
+    <!-- ── Console / STDOUT appender (structured JSON) ── -->
+    <appender name="STDOUT_JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <!-- Service identification fields — set via application.yml -->
+            <customFields>{"service":"${spring.application.name:-evisa-unknown}","env":"${spring.profiles.active:-default}"}</customFields>
+            <!-- Include all MDC fields as top-level JSON properties -->
+            <includeMdcKeyName>traceId</includeMdcKeyName>
+            <includeMdcKeyName>spanId</includeMdcKeyName>
+            <includeMdcKeyName>requestId</includeMdcKeyName>
+            <includeMdcKeyName>method</includeMdcKeyName>
+            <includeMdcKeyName>path</includeMdcKeyName>
+            <includeMdcKeyName>clientIp</includeMdcKeyName>
+            <!-- OTel agent injects these into MDC automatically -->
+            <includeMdcKeyName>trace_id</includeMdcKeyName>
+            <includeMdcKeyName>span_id</includeMdcKeyName>
+            <!-- Shorten stack traces in JSON output -->
+            <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                <maxDepthPerCause>20</maxDepthPerCause>
+                <maxLength>8192</maxLength>
+                <shortenedClassNameLength>40</shortenedClassNameLength>
+                <rootCauseFirst>true</rootCauseFirst>
+            </throwableConverter>
+        </encoder>
+    </appender>
+
+    <!-- ── Console appender (human-readable, for local dev) ── -->
+    <appender name="STDOUT_TEXT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %highlight(%-5level) [%cyan(%X{traceId:-no-trace})] %magenta(%logger{36}) — %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ── Async wrapper (prevents logging from blocking request thread) ── -->
+    <appender name="ASYNC_JSON" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>512</queueSize>
+        <neverBlock>true</neverBlock>
+        <appender-ref ref="STDOUT_JSON"/>
+    </appender>
+
+    <!-- ── Log levels ── -->
+    <!-- Framework internal logging -->
+    <logger name="aero.sita.oman.evisa" level="INFO"/>
+
+    <!-- Spring framework noise reduction -->
+    <logger name="org.springframework.web"                    level="WARN"/>
+    <logger name="org.springframework.security"               level="WARN"/>
+    <logger name="org.springframework.boot.autoconfigure"     level="WARN"/>
+    <logger name="org.hibernate.SQL"                          level="WARN"/>
+    <logger name="org.hibernate.orm.jdbc.bind"                level="WARN"/>
+
+    <!-- OTel SDK noise reduction (agent handles telemetry, not the SDK) -->
+    <logger name="io.opentelemetry"                           level="WARN"/>
+
+    <!-- ── Root logger ── -->
+    <!-- dev profile: human-readable text output -->
+    <springProfile name="dev,local">
+        <root level="DEBUG">
+            <appender-ref ref="STDOUT_TEXT"/>
+        </root>
+    </springProfile>
+
+    <!-- sit, uat, prod: structured JSON for Loki -->
+    <springProfile name="sit,uat,prod,default">
+        <root level="INFO">
+            <appender-ref ref="ASYNC_JSON"/>
+        </root>
+    </springProfile>
+
+</configuration>

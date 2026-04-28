@@ -1,0 +1,16 @@
+# Test-only overrides for sakila-framework integration tests.
+#
+# Rationale for OTel exclusion:
+#   opentelemetry-spring-boot-starter 2.12.0 was built for Spring Boot 3.x.
+#   RestClientInstrumentationAutoConfiguration carries @AutoConfigureAfter(
+#   org.springframework.boot.autoconfigure.web.client.RestClientAutoConfiguration)
+#   which references the Spring Boot 3.x package.  Spring Boot 4.x moved that
+#   class to org.springframework.boot.restclient.autoconfigure, so the bean-name
+#   generation step throws ClassNotFoundException.
+#   Exclude this single auto-configuration until OTel ships a Spring Boot 4.x
+#   compatible release.
+spring:
+  autoconfigure:
+    exclude:
+      - io.opentelemetry.instrumentation.spring.autoconfigure.internal.instrumentation.web.RestClientInstrumentationAutoConfiguration
+

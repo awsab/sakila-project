@@ -1,0 +1,6 @@
+# Auto-registered Spring Boot listeners for sakila-framework
+# SakilaLoggingApplicationListener: enforces structured JSON logging on every consumer service
+
+org.springframework.context.ApplicationListener=\
+  com.me.learning.framework.logging.SakilaLoggingApplicationListener
+

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+
+    <!-- ============================= -->
+    <!-- 🧪 Ignore Test Code -->
+    <!-- ============================= -->
+    <Match>
+        <Class name="~.*(Test|Tests|IT)$"/>
+    </Match>
+
+    <!-- ============================= -->
+    <!-- 🧱 Lombok Generated Code -->
+    <!-- ============================= -->
+    <Match>
+        <Class name="~.*Lombok.*"/>
+    </Match>
+
+    <!-- ============================= -->
+    <!-- DTO / Model Noise -->
+    <!-- ============================= -->
+
+    <!-- equals/hashCode not needed -->
+    <Match>
+        <Bug pattern="EQ_DOESNT_OVERRIDE_EQUALS"/>
+    </Match>
+
+    <!-- Exposing internal representation (common in DTOs) -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP"/>
+    </Match>
+
+    <!-- Storing a reference to an external mutable object. -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2" />
+    </Match>
+
+    <!-- ============================= -->
+    <!-- 🌐 Spring Framework Noise -->
+    <!-- ============================= -->
+
+    <!-- Spring proxy / reflection noise -->
+    <Match>
+        <Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+    </Match>
+
+    <!-- ============================= -->
+    <!-- 🔕 Optional Relaxations -->
+    <!-- ============================= -->
+
+    <!-- Ignore serializable warnings -->
+    <Match>
+        <Bug pattern="SE_NO_SERIALVERSIONID"/>
+    </Match>
+
+    <Match>
+        <Bug pattern="CRLF_INJECTION_LOGS" />
+    </Match>
+
+    <Match>
+        <Bug pattern="UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD" />
+    </Match>
+
+    <Match>
+        <Bug pattern="PERMISSIVE_CORS" />
+    </Match>
+
+</FindBugsFilter>

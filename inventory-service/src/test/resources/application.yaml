@@ -1,0 +1,51 @@
+# ─────────────────────────────────────────────────────────
+#  Test configuration — uses H2 in-memory database so
+#  integration tests run without a real MySQL instance.
+# ─────────────────────────────────────────────────────────
+
+spring:
+  application:
+    name: inventory-service-test
+
+  datasource:
+    url: >-
+      jdbc:h2:mem:testdb;
+      MODE=MySQL;
+      NON_KEYWORDS=VALUE;
+      DATABASE_TO_LOWER=TRUE;
+      CASE_INSENSITIVE_IDENTIFIERS=TRUE;
+      IGNORECASE=TRUE
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: false
+
+  h2:
+    console:
+      enabled: false
+
+  cache:
+    type: none
+
+server:
+  port: 0
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
+logging:
+  level:
+    root: WARN
+    com.me.learning: INFO
+

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ╔══════════════════════════════════════════════════════════════════════════╗
+  ║  Sakila Framework — Logback include fragment                             ║
+  ║                                                                          ║
+  ║  Usage in consumer logback-spring.xml:                                  ║
+  ║                                                                          ║
+  ║    <include resource="logback-sakila-include.xml"/>                      ║
+  ║                                                                          ║
+  ║  This registers SakilaLogging.LogbackContextListener which:             ║
+  ║    • adds a structured JSON console appender (Loki/Grafana ready)       ║
+  ║    • optionally ships to Logstash TCP                                   ║
+  ║    • survives Logback context resets (Spring profile activation)        ║
+  ║                                                                          ║
+  ║  NOTE: If you rely on SakilaLoggingApplicationListener (automatic),     ║
+  ║  you do NOT need to include this file. Use it only when you need         ║
+  ║  to control logging layout declaratively in your own XML config.        ║
+  ╚══════════════════════════════════════════════════════════════════════════╝
+-->
+<included>
+
+    <!-- Pull app name and active profile from Spring Environment -->
+    <springProperty name="sakilaAppName"
+                    source="spring.application.name"
+                    defaultValue="sakila-app"/>
+
+    <springProperty name="sakilaActiveProfile"
+                    source="spring.profiles.active"
+                    defaultValue="default"/>
+
+    <springProperty name="sakilaJsonEnabled"
+                    source="sakila.logging.json-format-enabled"
+                    defaultValue="true"/>
+
+    <springProperty name="sakilaLogstashEnabled"
+                    source="sakila.logging.logstash-enabled"
+                    defaultValue="false"/>
+
+    <!--
+      Registers a reset-resistant LogbackContextListener.
+      On context start and after any Logback reset, re-attaches the
+      structured JSON appender (and optionally the Logstash appender).
+    -->
+    <contextListener class="com.me.learning.framework.logging.SakilaLogging$LogbackContextListener">
+        <fields>{"app":"${sakilaAppName}","env":"${sakilaActiveProfile}"}</fields>
+        <jsonFormatEnabled>${sakilaJsonEnabled}</jsonFormatEnabled>
+        <logstashEnabled>${sakilaLogstashEnabled}</logstashEnabled>
+    </contextListener>
+
+</included>
+

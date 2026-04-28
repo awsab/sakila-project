@@ -1,0 +1,6 @@
+# Intentionally left without defaults.
+#
+# This module is a reusable shared library and should not silently override
+# application-level configuration for consuming services. Enterprise defaults
+# must be applied explicitly by the service or via dedicated, namespaced
+# configuration properties exposed by framework code.

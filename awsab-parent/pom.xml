@@ -1,0 +1,1273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+    ====================================================================================================================
+                                            AWSAB Base Parent POM
+    ____________________________________________________________________________________________________________________
+    This is the Single Parent POM for all the Micro services.
+    It deliberately DOES NOT extent the spring-boot-starter-parent.
+    Instead, spring-boot-dependencies BOM is imported inside <dependencyManagement>
+    so child projects inherit all Spring Boot managed versions while we remain free to override the
+    Maven default lifecycle plugin versions ourselves.
+
+    CHILD PROJECT USAGE
+        <parent>
+            <groupId>com.me.learning.parent</groupId>
+            <artifactId>awsab-parent</artifactId>
+            <version>1.0.0</version>
+            <relativePath/>
+        </parent>
+
+      PROFILES
+        SIT  (default)  – full tests + JaCoCo coverage gate (80 %)
+        UAT             – full tests, no coverage gate
+        PROD            – tests skipped
+    ====================================================================================================================
+    -->
+
+    <groupId>com.me.learning.parent</groupId>
+    <artifactId>awsab-parent</artifactId>
+    <version>1.0.0</version>
+    <name>awsab-parent</name>
+    <packaging>pom</packaging>
+    <description>
+        Parent POM for all AWSAB microservices.
+        Manages Spring Boot, Spring Cloud, OpenTelemetry, security,
+        testing, and build tooling versions in one place.
+    </description>
+
+    <licenses>
+        <license>
+            <name>Apache License, version 2.0</name>
+            <url>https://me.com/awsab/awsab-bom/main/LICENSE.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <organization>
+        <name>AWSAB</name>
+        <url>https://www.me.com</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <id>ramup</id>
+            <name>Prabakaran Ramu</name>
+            <email>prabakaran.ramu@me.com</email>
+            <organization>AWSAB</organization>
+            <organizationUrl>https://www.me.com</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:https://gitURL-for-parent-bom</connection>
+        <url>https://gitURL-for-parent-bom</url>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>releases</id>
+            <name>Internal Releases</name>
+            <url>https://XX.XX.XXX.XX:8081/repository/sakila-microservices/</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>Internal Snapshots</name>
+            <url>https://XX.XX.XXX.XX:8081/repository/sakila-microservices-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <!-- ══════════════════════════════════════════════════════
+         GLOBAL VERSION PROPERTIES
+         ─────────────────────────────────────────────────────
+         ALL version numbers live here. Child projects must
+         never redeclare a version — they pick it up from
+         dependencyManagement / pluginManagement below.
+    ══════════════════════════════════════════════════════ -->
+    <properties>
+        <!-- ── Java / Maven build ─────────────────────────── -->
+        <java.version>21</java.version>
+        <maven.version>3.9.0</maven.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.build.timestamp.format>yyyyMMddHHmmss</maven.build.timestamp.format>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
+
+        <!-- ── AWSAB Core Library ─────────────────────────────────────── -->
+        <awsab-framework.version>1.0.0</awsab-framework.version>
+
+        <!-- ── Null Check ─────────────────────────────────────── -->
+        <jspecify.version>1.0.0</jspecify.version>
+
+        <!-- ── Spring ─────────────────────────────────────── -->
+        <spring-boot.version>3.5.12</spring-boot.version>
+        <spring-cloud.version>2023.0.4</spring-cloud.version>
+
+        <!-- ── API / Web ───────────────────────────────────── -->
+        <springdoc-openapi.version>2.7.0</springdoc-openapi.version>
+
+        <!-- ── Logging ────────────────────────────────────── -->
+        <logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
+
+        <!-- ── Utilities ──────────────────────────────────── -->
+        <commons-lang3.version>3.18.0</commons-lang3.version>
+
+        <!-- ── Persistence ────────────────────────────────── -->
+        <hibernate-jpamodelgen.version>6.5.3.Final</hibernate-jpamodelgen.version>
+
+        <!-- ── Code generation ────────────────────────────── -->
+        <mapstruct.version>1.6.2</mapstruct.version>
+        <lombok.version>1.18.36</lombok.version>
+        <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
+
+        <!-- ── Testing ────────────────────────────────────── -->
+        <testcontainers.version>1.20.4</testcontainers.version>
+        <archunit.version>1.3.0</archunit.version>
+        <wiremock.version>3.10.0</wiremock.version>
+        <awaitility.version>4.2.2</awaitility.version>
+        <mockito.version>5.14.2</mockito.version>
+        <!--
+            REST Assured: version is also managed by spring-boot-dependencies BOM.
+            Declared here explicitly so child modules can override with a single
+            property override if a newer patch is needed:
+                <rest-assured.version>5.5.1</rest-assured.version>
+            Modules that do NOT need REST Assured simply omit the dependency —
+            declaring it in dependencyManagement never forces it on anyone.
+        -->
+        <rest-assured.version>5.5.0</rest-assured.version>
+
+        <!-- ── Observability / Telemetry ─────────────────── -->
+        <opentelemetry-bom.version>1.46.0</opentelemetry-bom.version>
+        <opentelemetry-instrumentation-bom.version>2.12.0</opentelemetry-instrumentation-bom.version>
+        <opentelemetry-semconv.version>1.29.0-alpha</opentelemetry-semconv.version>
+
+        <!-- ── Security ───────────────────────────────────── -->
+        <owasp-dependency-check.version>10.0.4</owasp-dependency-check.version>
+
+        <!-- ── Maven plugins ──────────────────────────────── -->
+        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+        <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>3.5.2</maven-failsafe-plugin.version>
+        <maven-deploy-plugin.version>3.1.3</maven-deploy-plugin.version>
+        <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
+        <maven-javadoc-plugin.version>3.11.1</maven-javadoc-plugin.version>
+        <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
+        <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
+        <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
+        <maven-site-plugin.version>3.12.1</maven-site-plugin.version>
+        <maven-project-info-reports-plugin.version>3.7.0</maven-project-info-reports-plugin.version>
+        <maven-dependency-plugin.version>3.8.1</maven-dependency-plugin.version>
+        <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
+        <versions-maven-plugin.version>2.18.0</versions-maven-plugin.version>
+        <git-commit-id-maven-plugin.version>9.0.1</git-commit-id-maven-plugin.version>
+        <sonar-maven-plugin.version>4.0.0.4121</sonar-maven-plugin.version>
+        <maven-pmd-plugin.version>3.25.0</maven-pmd-plugin.version>
+        <spotbugs-maven-plugin.version>4.9.3.0</spotbugs-maven-plugin.version>
+        <findsecbugs-plugin.version>1.12.0</findsecbugs-plugin.version>
+
+        <!-- ── JaCoCo coverage thresholds ─────────────────── -->
+        <jacoco.line.coverage.minimum>0.80</jacoco.line.coverage.minimum>
+        <jacoco.complexity.coverage.minimum>0.80</jacoco.complexity.coverage.minimum>
+
+        <!-- ── Static analysis defaults ───────────────────── -->
+        <checkstyle.max.line.length>140</checkstyle.max.line.length>
+
+        <!-- ── PMD ────────────────────────────────────────── -->
+        <pmd.failOnViolation>true</pmd.failOnViolation>
+        <pmd.printFailingErrors>true</pmd.printFailingErrors>
+
+        <!-- ── SpotBugs ───────────────────────────────────── -->
+        <spotbugs.effort>Max</spotbugs.effort>
+        <spotbugs.threshold>Medium</spotbugs.threshold>
+        <spotbugs.failOnError>true</spotbugs.failOnError>
+
+        <!-- ── SonarQube ───────────────────────────────────── -->
+        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+
+        <!-- Default .jacoco exclusions applied to all modules -->
+        <jacoco.excludes.dto>**/dto/**</jacoco.excludes.dto>
+        <jacoco.excludes.entity>**/entity/**</jacoco.excludes.entity>
+        <jacoco.excludes.mapper>**/mapper/**</jacoco.excludes.mapper>
+        <jacoco.excludes.repository>**/repository/**</jacoco.excludes.repository>
+        <jacoco.excludes.config>**/config/**</jacoco.excludes.config>
+        <jacoco.excludes.app>**/*Application.class</jacoco.excludes.app>
+
+
+    </properties>
+
+    <!-- ══════════════════════════════════════════════════════
+         DEPENDENCY MANAGEMENT
+         ─────────────────────────────────────────────────────
+         Child projects declare dependencies WITHOUT versions.
+         All versions are resolved here via BOM imports or
+         explicit version tags.
+    ══════════════════════════════════════════════════════ -->
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- ── Spring Boot BOM (replaces extending spring-boot-starter-parent) -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- ── Spring Cloud BOM -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- ── OpenTelemetry core BOM -->
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom</artifactId>
+                <version>${opentelemetry-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- ── OpenTelemetry instrumentation BOM -->
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-bom</artifactId>
+                <version>${opentelemetry-instrumentation-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Align semconv across OTel contrib/instrumentation to satisfy convergence checks -->
+            <dependency>
+                <groupId>io.opentelemetry.semconv</groupId>
+                <artifactId>opentelemetry-semconv</artifactId>
+                <version>${opentelemetry-semconv.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.semconv</groupId>
+                <artifactId>opentelemetry-semconv-incubating</artifactId>
+                <version>${opentelemetry-semconv.version}</version>
+            </dependency>
+
+            <!-- ── Testcontainers BOM -->
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Internal shared starter/framework coordinate -->
+            <dependency>
+                <groupId>com.me.learning.parent</groupId>
+                <artifactId>awsab-framework</artifactId>
+                <version>${awsab-framework.version}</version>
+            </dependency>
+
+            <!--
+                Spring Boot/Spring Cloud/OpenTelemetry/Testcontainers dependencies are version-managed
+                via imported BOMs above. Child modules can declare those dependencies without versions.
+            -->
+
+            <!-- ════════════════════════════════════════════
+                 API DOCUMENTATION
+            ════════════════════════════════════════════ -->
+
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc-openapi.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+                <version>${springdoc-openapi.version}</version>
+            </dependency>
+
+            <!-- ════════════════════════════════════════════
+                 LOGGING
+            ════════════════════════════════════════════ -->
+
+            <!-- Logstash JSON encoder — structured logs for Loki -->
+            <dependency>
+                <groupId>net.logstash.logback</groupId>
+                <artifactId>logstash-logback-encoder</artifactId>
+                <version>${logstash-logback-encoder.version}</version>
+                <exclusions>
+                    <!-- Use the versions pulled in by Spring Boot -->
+                    <exclusion>
+                        <groupId>ch.qos.logback</groupId>
+                        <artifactId>logback-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>ch.qos.logback</groupId>
+                        <artifactId>logback-classic</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>ch.qos.logback</groupId>
+                        <artifactId>logback-access</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- ════════════════════════════════════════════
+                 CODE GENERATION (Lombok + MapStruct)
+            ════════════════════════════════════════════ -->
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+                <optional>true</optional>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct-processor</artifactId>
+                <version>${mapstruct.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok-mapstruct-binding</artifactId>
+                <version>${lombok-mapstruct-binding.version}</version>
+            </dependency>
+
+            <!-- ════════════════════════════════════════════
+                 Null Check
+            ════════════════════════════════════════════ -->
+            <dependency>
+                <groupId>org.jspecify</groupId>
+                <artifactId>jspecify</artifactId>
+                <version>${jspecify.version}</version>
+            </dependency>
+
+            <!-- ════════════════════════════════════════════
+                 PERSISTENCE
+            ════════════════════════════════════════════ -->
+
+            <!-- JPA static metamodel generator (compile-time) -->
+            <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-jpamodelgen</artifactId>
+                <version>${hibernate-jpamodelgen.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- ════════════════════════════════════════════
+                 TESTING
+            ════════════════════════════════════════════ -->
+
+            <!-- WireMock — HTTP stub server for integration tests -->
+            <dependency>
+                <groupId>org.wiremock</groupId>
+                <artifactId>wiremock-standalone</artifactId>
+                <version>${wiremock.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- ArchUnit — enforce architecture rules in tests -->
+            <dependency>
+                <groupId>com.tngtech.archunit</groupId>
+                <artifactId>archunit-junit5</artifactId>
+                <version>${archunit.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- Awaitility — async assertions in tests -->
+            <dependency>
+                <groupId>org.awaitility</groupId>
+                <artifactId>awaitility</artifactId>
+                <version>${awaitility.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!--
+                REST Assured — HTTP integration testing DSL
+                ─────────────────────────────────────────────────────────────
+                Version is managed here (and also by spring-boot-dependencies BOM).
+                This entry does NOT add the dependency to any module automatically.
+
+                To USE in a child module  →  declare WITHOUT <version>:
+                    <dependency>
+                        <groupId>io.rest-assured</groupId>
+                        <artifactId>rest-assured</artifactId>
+                        <scope>test</scope>
+                    </dependency>
+                    <dependency>
+                        <groupId>io.rest-assured</groupId>
+                        <artifactId>json-path</artifactId>
+                        <scope>test</scope>
+                    </dependency>
+
+                To SKIP in a module  →  simply do not declare it.
+
+                To OVERRIDE version in one module only:
+                    <properties>
+                        <rest-assured.version>5.5.1</rest-assured.version>
+                    </properties>
+                ─────────────────────────────────────────────────────────────
+            -->
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>rest-assured</artifactId>
+                <version>${rest-assured.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>io.rest-assured</groupId>
+                <artifactId>json-path</artifactId>
+                <version>${rest-assured.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- ══════════════════════════════════════════════════════
+         BUILD — PLUGIN MANAGEMENT
+         ─────────────────────────────────────────────────────
+         All plugin versions and default configurations are
+         centralised here.  Child projects activate a plugin
+         by declaring it in their own <build><plugins> without
+         repeating version or configuration.
+    ══════════════════════════════════════════════════════ -->
+
+    <build>
+        <pluginManagement>
+            <plugins>
+
+                <!-- ── Maven Compiler ─────────────────────── -->
+                <!--
+                    Configured with annotation processors for:
+                      • Lombok (code generation)
+                      • MapStruct (mapper generation)
+                      • Lombok-MapStruct binding (ordering)
+                      • Spring Boot configuration metadata
+                      • Hibernate JPA metamodel
+                    Child projects get all of this for free.
+                -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                    <configuration>
+                        <release>${java.version}</release>
+                        <source>${maven.compiler.source}</source>
+                        <target>${maven.compiler.target}</target>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                        <showDeprecation>true</showDeprecation>
+                        <showWarnings>true</showWarnings>
+                        <parameters>true</parameters>
+                        <annotationProcessorPaths>
+                            <!-- ORDER MATTERS: lombok before mapstruct, binding last -->
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                            <path>
+                                <groupId>org.mapstruct</groupId>
+                                <artifactId>mapstruct-processor</artifactId>
+                                <version>${mapstruct.version}</version>
+                            </path>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok-mapstruct-binding</artifactId>
+                                <version>${lombok-mapstruct-binding.version}</version>
+                            </path>
+                            <path>
+                                <groupId>org.springframework.boot</groupId>
+                                <artifactId>spring-boot-configuration-processor</artifactId>
+                                <version>${spring-boot.version}</version>
+                            </path>
+                            <path>
+                                <groupId>org.hibernate.orm</groupId>
+                                <artifactId>hibernate-jpamodelgen</artifactId>
+                                <version>${hibernate-jpamodelgen.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+
+                <!-- ── Spring Boot Maven Plugin ───────────── -->
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                    <configuration>
+                        <!-- Exclude Lombok from the fat JAR — compile-only -->
+                        <excludes>
+                            <exclude>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                            </exclude>
+                        </excludes>
+                        <!-- Embed build info into /actuator/info -->
+                        <additionalProperties>
+                            <encoding.source>${project.build.sourceEncoding}</encoding.source>
+                            <java.version>${java.version}</java.version>
+                        </additionalProperties>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>repackage</goal>
+                                <goal>build-info</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- ── Git Commit ID (build info in Actuator) -->
+                <plugin>
+                    <groupId>io.github.git-commit-id</groupId>
+                    <artifactId>git-commit-id-maven-plugin</artifactId>
+                    <version>${git-commit-id-maven-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>get-the-git-infos</id>
+                            <goals>
+                                <goal>revision</goal>
+                            </goals>
+                            <phase>initialize</phase>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                        <generateGitPropertiesFilename>
+                            ${project.build.outputDirectory}/git.properties
+                        </generateGitPropertiesFilename>
+                        <includeOnlyProperties>
+                            <includeOnlyProperty>^git.branch$</includeOnlyProperty>
+                            <includeOnlyProperty>^git.commit.id.abbrev$</includeOnlyProperty>
+                            <includeOnlyProperty>^git.commit.time$</includeOnlyProperty>
+                            <includeOnlyProperty>^git.build.time$</includeOnlyProperty>
+                        </includeOnlyProperties>
+                        <commitIdGenerationMode>full</commitIdGenerationMode>
+                        <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                    </configuration>
+                </plugin>
+
+                <!-- ── Maven Enforcer ─────────────────────── -->
+                <!--
+                    Enforces:
+                      • Minimum Maven version
+                      • Minimum Java version
+                      • Dependency version convergence (no conflicts)
+                    Fails the build early if rules are violated.
+                -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>${maven-enforcer-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>enforce-versions</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <requireMavenVersion>
+                                        <message>
+                                            awsab requires Maven ${maven.version} or higher.
+                                        </message>
+                                        <version>[${maven.version},)</version>
+                                    </requireMavenVersion>
+                                    <requireJavaVersion>
+                                        <message>
+                                            awsab requires Java ${java.version}.
+                                        </message>
+                                        <version>[${java.version},)</version>
+                                    </requireJavaVersion>
+                                    <requireUpperBoundDeps />
+                                </rules>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>enforce-dependency-convergence</id>
+                            <goals>
+                                <goal>enforce</goal>
+                            </goals>
+                            <configuration>
+                                <rules>
+                                    <dependencyConvergence />
+                                </rules>
+                                <fail>true</fail>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- ── JaCoCo Code Coverage ───────────────── -->
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco-maven-plugin.version}</version>
+                    <configuration>
+                        <excludes>
+                            <exclude>${jacoco.excludes.dto}</exclude>
+                            <exclude>${jacoco.excludes.entity}</exclude>
+                            <exclude>${jacoco.excludes.mapper}</exclude>
+                            <exclude>${jacoco.excludes.repository}</exclude>
+                            <exclude>${jacoco.excludes.config}</exclude>
+                            <exclude>${jacoco.excludes.app}</exclude>
+                        </excludes>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>jacoco-prepare-agent</id>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>jacoco-report</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                        </execution>
+                        <!-- Coverage gate — activated in SIT profile -->
+                    </executions>
+                </plugin>
+
+                <!-- ── Maven Surefire (unit tests) ────────── -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire-plugin.version}</version>
+                    <configuration>
+                        <!-- JUnit 5 platform -->
+                        <useModulePath>false</useModulePath>
+                        <runOrder>alphabetical</runOrder>
+                        <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                        <!-- JaCoCo agent is injected via argLine -->
+                        <argLine>@{argLine} -Xmx1024m -XX:+EnableDynamicAgentLoading</argLine>
+                    </configuration>
+                </plugin>
+
+                <!-- ── Maven Failsafe (integration tests) ─── -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${maven-failsafe-plugin.version}</version>
+                    <configuration>
+                        <runOrder>alphabetical</runOrder>
+                        <argLine>@{argLine} -Xmx1024m</argLine>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>integration-test</goal>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- ── Maven Resources ────────────────────── -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>${maven-resources-plugin.version}</version>
+                    <configuration>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                        <nonFilteredFileExtensions>
+                            <nonFilteredFileExtension>jar</nonFilteredFileExtension>
+                            <nonFilteredFileExtension>p12</nonFilteredFileExtension>
+                            <nonFilteredFileExtension>jks</nonFilteredFileExtension>
+                        </nonFilteredFileExtensions>
+                    </configuration>
+                </plugin>
+
+                <!-- ── Maven Deploy ───────────────────────── -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>${maven-deploy-plugin.version}</version>
+                </plugin>
+
+                <!-- ── Maven Source ───────────────────────── -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${maven-source-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- ── Maven Javadoc ──────────────────────── -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${maven-javadoc-plugin.version}</version>
+                    <configuration>
+                        <source>${maven.compiler.source}</source>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                        <failOnError>false</failOnError>
+                        <doclint>none</doclint>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- ── Maven Checkstyle ───────────────────── -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>${maven-checkstyle-plugin.version}</version>
+                    <configuration>
+                        <!-- Parent-enforced rules: every child module inherits the same policy. -->
+                        <configLocation>../awsab-parent/checkstyle/awsab-checkstyle.xml</configLocation>
+                        <suppressionsLocation>../awsab-parent/checkstyle/awsab-checkstyle-suppressions.xml</suppressionsLocation>
+                        <suppressionsFileExpression>checkstyle.suppressions.file</suppressionsFileExpression>
+                        <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                        <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
+                        <linkXRef>false</linkXRef>
+                        <consoleOutput>true</consoleOutput>
+                        <failsOnError>true</failsOnError>
+                        <failOnViolation>true</failOnViolation>
+                        <violationSeverity>error</violationSeverity>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>checkstyle-validate</id>
+                            <phase>validate</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- ── Maven Dependency (analysis) ───────── -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>${maven-dependency-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>analyze-dependencies</id>
+                            <goals>
+                                <goal>analyze-only</goal>
+                            </goals>
+                            <configuration>
+                                <failOnWarning>false</failOnWarning>
+                                <ignoreNonCompile>true</ignoreNonCompile>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- ── OWASP Dependency Check (CVE scan) ─── -->
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <version>${owasp-dependency-check.version}</version>
+                    <configuration>
+                        <outputDirectory
+                        >${project.build.directory}/dependency-check</outputDirectory>
+                        <formats>
+                            <format>HTML</format>
+                            <format>XML</format>
+                            <format>JSON</format>
+                        </formats>
+                        <!--
+                            Fail build if any CVE >= 7.0 (HIGH or CRITICAL).
+                            Lower to 6.5 if you want to catch MEDIUM as well.
+                        -->
+                        <failBuildOnCVSS>7</failBuildOnCVSS>
+                        <suppressionFile>
+                            ${project.basedir}/src/main/resources/dependency-suppressions.xml
+                        </suppressionFile>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>dependency-check</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- ── SonarQube ──────────────────────────── -->
+                <plugin>
+                    <groupId>org.sonarsource.scanner.maven</groupId>
+                    <artifactId>sonar-maven-plugin</artifactId>
+                    <version>${sonar-maven-plugin.version}</version>
+                </plugin>
+
+                <!-- ── PMD (static analysis) ─────────────── -->
+                <!--
+                    Runs two goals:
+                      • pmd   – finds code style and design issues
+                      • cpd   – detects copy-paste duplication
+                    Fails the build on any violation at verify phase.
+                    Override pmd.failOnViolation=false in a child to
+                    downgrade to a warning without changing this POM.
+                -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-pmd-plugin</artifactId>
+                    <version>${maven-pmd-plugin.version}</version>
+                    <configuration>
+                        <targetJdk>${java.version}</targetJdk>
+                        <!--<sourceEncoding>${project.build.sourceEncoding}</sourceEncoding>-->
+                        <minimumTokens>125</minimumTokens>
+                        <failOnViolation>${pmd.failOnViolation}</failOnViolation>
+                        <printFailingErrors>${pmd.printFailingErrors}</printFailingErrors>
+                        <includeTests>true</includeTests>
+                        <linkXRef>false</linkXRef>
+                        <rulesets>
+<!--                            <ruleset>rulesets/java/quickstart.xml</ruleset>-->
+                            <ruleset>../awsab-parent/pmd/pmd-rules.xml</ruleset>
+                        </rulesets>
+                        <excludeRoots>
+                            <excludeRoot>${project.build.directory}/generated-sources</excludeRoot>
+                            <excludeRoot>${project.build.directory}/generated-test-sources</excludeRoot>
+                        </excludeRoots>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>pmd-check</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>check</goal>
+                                <goal>cpd-check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- ── SpotBugs (bytecode bug analysis) ──── -->
+                <!--
+                    Analyses compiled bytecode for common bug patterns.
+                    Effort=Max gives the most thorough scan.
+                    Threshold=Medium catches MEDIUM, HIGH and CRITICAL bugs.
+                    Override spotbugs.failOnError=false in a child to
+                    report without failing the build.
+                -->
+                <plugin>
+                    <groupId>com.github.spotbugs</groupId>
+                    <artifactId>spotbugs-maven-plugin</artifactId>
+                    <version>${spotbugs-maven-plugin.version}</version>
+                    <configuration>
+                        <excludeFilterFile>../awsab-parent/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+                        <effort>${spotbugs.effort}</effort>
+                        <threshold>${spotbugs.threshold}</threshold>
+                        <failOnError>${spotbugs.failOnError}</failOnError>
+                        <includeTests>true</includeTests>
+                        <xmlOutput>true</xmlOutput>
+                        <xmlOutputDirectory>
+                            ${project.build.directory}/spotbugs
+                        </xmlOutputDirectory>
+                        <plugins>
+                            <plugin>
+                                <groupId>com.h3xstream.findsecbugs</groupId>
+                                <artifactId>findsecbugs-plugin</artifactId>
+                                <version>${findsecbugs-plugin.version}</version>
+                            </plugin>
+                        </plugins>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>spotbugs-check</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- ── Versions Plugin (dependency updates) ─ -->
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>versions-maven-plugin</artifactId>
+                    <version>${versions-maven-plugin.version}</version>
+                    <configuration>
+                        <generateBackupPoms>false</generateBackupPoms>
+                    </configuration>
+                </plugin>
+
+                <!-- ── Maven Site ─────────────────────────── -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>${maven-site-plugin.version}</version>
+                    <configuration>
+                        <locales>en</locales>
+                        <outputDirectory
+                        >${project.build.directory}/site</outputDirectory>
+                    </configuration>
+                </plugin>
+
+                <!-- ── Project Info Reports ──────────────── -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-project-info-reports-plugin</artifactId>
+                    <version
+                    >${maven-project-info-reports-plugin.version}</version>
+                </plugin>
+
+            </plugins>
+        </pluginManagement>
+
+        <!-- ── Plugins active for EVERY child build ────── -->
+        <!--
+            Only put plugins here that must run unconditionally
+            in every module. Version-sensitive or optional
+            plugins belong in pluginManagement only.
+        -->
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+
+    </build>
+
+    <!-- ══════════════════════════════════════════════════════
+         BUILD PROFILES
+         ─────────────────────────────────────────────────────
+         Activate with:  mvn clean verify -P SIT
+                         mvn clean verify -P UAT
+                         mvn clean package -P PROD
+    ══════════════════════════════════════════════════════ -->
+
+    <profiles>
+
+        <!-- ── OTEL_MANUAL_SDK (opt-in) ─────────────────────
+             For services that intentionally wire SDK/exporter manually.
+             Do not combine this mode with Java agent auto-instrumentation.
+        ─────────────────────────────────────────────────── -->
+        <profile>
+            <id>OTEL_MANUAL_SDK</id>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>io.opentelemetry</groupId>
+                        <artifactId>opentelemetry-sdk</artifactId>
+                    </dependency>
+                    <dependency>
+                        <groupId>io.opentelemetry</groupId>
+                        <artifactId>opentelemetry-exporter-otlp</artifactId>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+
+        <!-- ── OTEL_MICROMETER_BRIDGE (opt-in) ─────────────
+             Use only when a service intentionally follows the Micrometer bridge path
+             instead of the OpenTelemetry Spring starter path.
+        ─────────────────────────────────────────────────── -->
+        <profile>
+            <id>OTEL_MICROMETER_BRIDGE</id>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>io.micrometer</groupId>
+                        <artifactId>micrometer-tracing-bridge-otel</artifactId>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+
+        <!-- ── SIT (default) ──────────────────────────────
+             • Unit tests run with full parallelism
+             • Integration tests run via Failsafe
+             • JaCoCo coverage gate: 80% line + 80% complexity
+             • Checkstyle violations fail the build
+        ─────────────────────────────────────────────────── -->
+        <profile>
+            <id>SIT</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <spring.profiles.active>sit</spring.profiles.active>
+                <environment>SIT</environment>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skipTests>false</skipTests>
+                            <forkCount>1</forkCount>
+                            <reuseForks>false</reuseForks>
+                            <parallel>methods</parallel>
+                            <threadCount>10</threadCount>
+                            <useUnlimitedThreads>false</useUnlimitedThreads>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>jacoco-prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>jacoco-report</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>jacoco-check</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <rule>
+                                            <element>BUNDLE</element>
+                                            <limits>
+                                                <limit>
+                                                    <counter>LINE</counter>
+                                                    <value>COVEREDRATIO</value>
+                                                    <minimum>${jacoco.line.coverage.minimum}</minimum>
+                                                </limit>
+                                                <limit>
+                                                    <counter>COMPLEXITY</counter>
+                                                    <value>COVEREDRATIO</value>
+                                                    <minimum>${jacoco.complexity.coverage.minimum}</minimum>
+                                                </limit>
+                                            </limits>
+                                        </rule>
+                                    </rules>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- ── UAT ────────────────────────────────────────
+             • Full unit + integration tests
+             • No coverage gate (gate runs in SIT)
+             • Parallel test execution
+        ─────────────────────────────────────────────────── -->
+        <profile>
+            <id>UAT</id>
+            <activation>
+                <property>
+                    <name>env</name>
+                    <value>UAT</value>
+                </property>
+            </activation>
+            <properties>
+                <spring.profiles.active>uat</spring.profiles.active>
+                <environment>UAT</environment>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skipTests>false</skipTests>
+                            <forkCount>1</forkCount>
+                            <reuseForks>false</reuseForks>
+                            <parallel>methods</parallel>
+                            <threadCount>10</threadCount>
+                            <useUnlimitedThreads>false</useUnlimitedThreads>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>jacoco-prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>jacoco-report</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <!-- ── PROD ───────────────────────────────────────
+             • Tests skipped entirely
+             • OWASP CVE scan runs (fail on HIGH/CRITICAL)
+             • Sources and Javadoc JARs attached for Nexus
+        ─────────────────────────────────────────────────── -->
+        <profile>
+            <id>PROD</id>
+            <activation>
+                <property>
+                    <name>env</name>
+                    <value>PROD</value>
+                </property>
+            </activation>
+            <properties>
+                <spring.profiles.active>prod</spring.profiles.active>
+                <environment>PROD</environment>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <skipTests>true</skipTests>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <skipITs>true</skipITs>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.owasp</groupId>
+                        <artifactId>dependency-check-maven</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+    </profiles>
+
+    <!-- ══════════════════════════════════════════════════════
+         REPORTING
+    ══════════════════════════════════════════════════════ -->
+
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-project-info-reports-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <reportSets>
+                    <reportSet>
+                        <reports>
+                            <report>report</report>
+                        </reports>
+                    </reportSet>
+                </reportSets>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </reporting>
+
+</project>

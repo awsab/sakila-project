@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+    "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+    "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<module name="Checker">
+    <property name="severity" value="error"/>
+
+    <!-- Load the suppressions file (suppresses all checks for test sources and generated sources). -->
+    <!-- ${checkstyle.suppressions.file} is set by maven-checkstyle-plugin from suppressionsLocation config. -->
+    <module name="SuppressionFilter">
+        <property name="file" value="${checkstyle.suppressions.file}"/>
+        <property name="optional" value="true"/>
+    </module>
+
+    <module name="FileTabCharacter"/>
+    <module name="NewlineAtEndOfFile"/>
+    <module name="RegexpSingleline">
+        <property name="format" value="\s+$"/>
+        <property name="message" value="Line has trailing whitespace."/>
+    </module>
+    <module name="LineLength">
+        <property name="max" value="140"/>
+        <property name="ignorePattern" value="^package|^import|https?://"/>
+    </module>
+
+    <module name="TreeWalker">
+        <module name="AvoidStarImport"/>
+        <module name="UnusedImports"/>
+        <module name="RedundantImport"/>
+        <module name="ImportOrder">
+            <!--
+                Import group order — mirrors the packages actually used in this project.
+
+                Tier 1  — JDK standard library
+                    java        (java.io, java.lang.annotation, java.math, java.net,
+                                 java.nio, java.text, java.time, java.util)
+
+                Tier 2  — Jakarta EE platform API
+                    jakarta     (jakarta.persistence, jakarta.servlet, jakarta.validation)
+
+                Tier 3  — Logging implementation stack (ordered: backend → encoder → API)
+                    ch          (ch.qos.logback.classic, ch.qos.logback.core)
+                    net         (net.logstash.logback.appender,
+                                 net.logstash.logback.composite,
+                                 net.logstash.logback.encoder,
+                                 net.logstash.logback.stacktrace)
+                    org.slf4j   (org.slf4j.Logger, org.slf4j.LoggerFactory)
+
+                Tier 4  — Other third-party  (io.* before org.* — 'i' < 'o')
+                    io          (io.swagger.v3.oas.annotations,
+                                 io.swagger.v3.oas.models)
+
+                Tier 5  — org.* third-party libraries (alphabetical within org)
+                    org.apache  (org.apache.commons.lang3)
+                    org.assertj (org.assertj.core.api — test)
+                    org.hibernate (org.hibernate.annotations, org.hibernate.type)
+                    org.jspecify (org.jspecify.annotations)
+                    org.junit   (org.junit.jupiter — JUnit 5)
+                    org.mapstruct (org.mapstruct.*)
+                    org.mockito (org.mockito.*)
+                    org.springframework (org.springframework.boot,
+                                         org.springframework.cache,
+                                         org.springframework.context,
+                                         org.springframework.core,
+                                         org.springframework.data,
+                                         org.springframework.format,
+                                         org.springframework.http,
+                                         org.springframework.lang,
+                                         org.springframework.security,
+                                         org.springframework.stereotype,
+                                         org.springframework.transaction,
+                                         org.springframework.validation,
+                                         org.springframework.web)
+
+                Tier 6  — Code-generation (compile-time only, never in production bytecode)
+                    lombok      (lombok.*)
+
+                Tier 7  — Internal project classes + bundled third-party under com.*
+                    com         (com.fasterxml.jackson.*,
+                                 com.me.learning.framework.*,
+                                 com.me.learning.parent.*)
+            -->
+            <property name="groups"
+                      value="java,jakarta,ch,net,org.slf4j,io,org.apache,org.assertj,org.hibernate,org.jspecify,org.junit,org.mapstruct,org.mockito,org.springframework,lombok,com"/>
+            <property name="ordered" value="true"/>
+            <property name="separated" value="true"/>
+            <property name="option" value="top"/>
+            <property name="sortStaticImportsAlphabetically" value="true"/>
+        </module>
+
+        <module name="NeedBraces"/>
+        <module name="EmptyBlock"/>
+        <module name="WhitespaceAround"/>
+        <module name="NoWhitespaceBefore"/>
+        <module name="OneStatementPerLine"/>
+
+        <module name="PackageName"/>
+        <module name="TypeName"/>
+        <module name="MethodName"/>
+        <module name="ParameterName"/>
+        <module name="LocalVariableName"/>
+
+        <module name="CyclomaticComplexity">
+            <property name="max" value="15"/>
+        </module>
+        <module name="NPathComplexity">
+            <property name="max" value="200"/>
+        </module>
+        <module name="MethodLength">
+            <property name="max" value="120"/>
+        </module>
+        <module name="ParameterNumber">
+            <property name="max" value="7"/>
+            <property name="ignoreOverriddenMethods" value="true"/>
+        </module>
+        <module name="NestedIfDepth">
+            <property name="max" value="4"/>
+        </module>
+    </module>
+</module>
+

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="Company Standard PMD Rules"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0
+         http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
+
+    <description>
+        Standard PMD rules for Spring Boot microservices (PMD 7.x compatible)
+    </description>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- 🔴  ERROR PRONE – Critical Bug Detection                          -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <rule ref="category/java/errorprone.xml">
+        <!-- Marker/factory classes with only private constructors but no static methods -->
+        <exclude name="MissingStaticMethodInNonInstantiatableClass"/>
+        <!-- Common in test classes; @ParameterizedTest classes look like they have no tests -->
+        <exclude name="TestClassWithoutTestCases"/>
+        <!-- String constants in tests and small helper classes are acceptable -->
+        <exclude name="AvoidDuplicateLiterals"/>
+        <!-- Rule:AvoidFieldNameMatchingTypeName  -->
+        <exclude name="AvoidFieldNameMatchingTypeName"/>
+        <!-- Usage of java.util.Date should be replaced with classes from java.time -->
+        <exclude name="ReplaceJavaUtilDate"/>
+        <exclude name="InvalidLogMessageFormat"/>
+    </rule>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- 🟠  BEST PRACTICES                                                -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <rule ref="category/java/bestpractices.xml">
+        <exclude name="UseVarargs"/>
+        <!-- SLF4J handles lazy evaluation automatically; guard checks add clutter -->
+        <exclude name="GuardLogStatement"/>
+        <!-- Too restrictive for well-structured integration/service tests -->
+        <exclude name="JUnitTestContainsTooManyAsserts"/>
+        <!-- Conflicts with AssertJ assertion style (no separate message needed) -->
+        <exclude name="JUnitTestsShouldIncludeAssert"/>
+        <!-- Spring/JPA patterns legitimately use ArrayList/HashMap directly -->
+        <exclude name="LooseCoupling"/>
+        <!-- Template method pattern intentionally uses non-abstract abstract classes -->
+        <exclude name="AbstractClassWithoutAbstractMethod"/>
+        <!-- Unit tests should not contain more than 1 assert(s) -->
+        <exclude name="UnitTestContainsTooManyAsserts"/>
+    </rule>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- 🟡  CODE STYLE                                                    -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <rule ref="category/java/codestyle.xml">
+        <exclude name="ShortVariable"/>
+        <exclude name="AtLeastOneConstructor"/>
+        <!-- Not idiomatic Java; adds visual clutter without safety benefit -->
+        <exclude name="MethodArgumentCouldBeFinal"/>
+        <exclude name="LocalVariableCouldBeFinal"/>
+        <!-- Single-return style conflicts with guard clauses / early-return patterns -->
+        <exclude name="OnlyOneReturn"/>
+        <!-- Long constant names (SPRING_PROFILE_DEVELOPMENT) are intentional -->
+        <exclude name="LongVariable"/>
+        <!-- Trivial super() calls are unnecessary noise -->
+        <exclude name="CallSuperInConstructor"/>
+        <!-- Conflicts with idiomatic use of var -->
+        <exclude name="UseExplicitTypes"/>
+        <!-- Single-letter generic names like <T>, <ENTITY> are conventional -->
+        <exclude name="GenericsNaming"/>
+        <!-- Field ordering is enforced by IDE formatter; PMD rule is too strict -->
+        <exclude name="FieldDeclarationsShouldBeAtStartOfClass"/>
+        <!-- Short method names like ok() are common in fluent/builder APIs -->
+        <exclude name="ShortMethodName"/>
+        <!-- Filter setter methods return 'this' for fluent chaining; get/is prefix not applicable -->
+        <exclude name="LinguisticNaming"/>
+        <exclude name="UnnecessaryAnnotationValueElement"/>
+        <!-- @Nested test classes intentionally use package-private (default) access -->
+        <exclude name="CommentDefaultAccessModifier"/>
+        <!-- The type parameter name 'ENTITY' doesn't match '[A-Z]' -->
+        <exclude name="TypeParameterNamingConventions"/>
+        <!-- method which returns a boolean or Boolean should be named isX -->
+        <exclude name="BooleanGetMethodName"/>
+    </rule>
+
+    <!-- Code-style property overrides -->
+    <rule ref="category/java/codestyle.xml/ShortClassName">
+        <properties>
+            <!-- Allow 4-character names like Film or Task -->
+            <property name="minimum" value="4"/>
+        </properties>
+    </rule>
+
+    <rule ref="category/java/codestyle.xml/FieldNamingConventions">
+        <properties>
+            <!-- Allow 'log' as a valid name for static final logger fields -->
+            <property name="constantPattern" value="[A-Z][A-Z_0-9]*|log"/>
+        </properties>
+    </rule>
+
+    <rule ref="category/java/codestyle.xml/TooManyStaticImports">
+        <properties>
+            <!-- Increase limit; test classes with many AssertJ/Mockito statics are acceptable -->
+            <property name="maximumStaticImports" value="30"/>
+        </properties>
+    </rule>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- 🧠  DESIGN                                                        -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <rule ref="category/java/design.xml">
+        <!-- Spring fluent API chains (e.g. spec.and(...).or(...)) violate this -->
+        <exclude name="LawOfDemeter"/>
+        <!-- Test classes with @Nested or lifecycle methods trigger false positives -->
+        <exclude name="TooManyMethods"/>
+        <!-- BaseQueryService and ConditionBuilder are intentionally comprehensive framework classes -->
+        <exclude name="CouplingBetweenObjects"/>
+        <!-- Properties/constants classes are legitimate data holders -->
+        <exclude name="DataClass"/>
+        <!-- BaseQueryService is a designed comprehensive query helper -->
+        <exclude name="GodClass"/>
+        <!-- String building from multiple fields in toString() exceeds threshold but is correct -->
+        <exclude name="NPathComplexity"/>
+        <!-- Object parameters in alert APIs are intentional for extensibility -->
+        <exclude name="UseObjectForClearerAPI"/>
+
+    </rule>
+
+    <!-- Design property overrides -->
+    <rule ref="category/java/design.xml/UseUtilityClass">
+        <properties>
+            <!-- Suppress for Spring Boot @SpringBootApplication entry-point classes -->
+            <property name="violationSuppressXPath"
+                      value=".[pmd-java:hasAnnotation('org.springframework.boot.autoconfigure.SpringBootApplication')]"/>
+        </properties>
+    </rule>
+
+    <rule ref="category/java/design.xml/CyclomaticComplexity">
+        <properties>
+            <property name="classReportLevel" value="100"/>
+            <property name="methodReportLevel" value="15"/>
+        </properties>
+    </rule>
+
+    <rule ref="category/java/design.xml/ExcessiveImports">
+        <properties>
+            <property name="minimum" value="50"/>
+        </properties>
+    </rule>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- 🚀  PERFORMANCE                                                   -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <rule ref="category/java/performance.xml">
+        <!-- char-append variants add noise without measurable gain in modern JVMs -->
+        <exclude name="AppendCharacterWithChar"/>
+    </rule>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- 🔐  SECURITY                                                      -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <rule ref="category/java/security.xml"/>
+
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <!-- 🧪  MULTITHREADING                                                -->
+    <!-- ══════════════════════════════════════════════════════════════════ -->
+    <rule ref="category/java/multithreading.xml">
+        <!-- Non-concurrent utility/builder code does not need ConcurrentHashMap -->
+        <exclude name="UseConcurrentHashMap"/>
+    </rule>
+
+</ruleset>
+

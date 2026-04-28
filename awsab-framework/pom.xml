@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+    ============================================================
+      AWSAB Framework — Shared Starter Library
+      ─────────────────────────────────────────────────────────
+      PURPOSE
+        This JAR is the enterprise shared library consumed by
+        every awsab microservice.  It provides:
+          • Base JPA entities (auditing, soft delete, versioning)
+          • Generic repository and service abstractions
+          • Global exception handling and standard error model
+          • Security context utilities (JWT principal extraction)
+          • OpenTelemetry custom span helper
+          • Structured logging MDC filter (traceId, serviceId)
+          • Common REST response envelope
+          • Validation utilities
+          • Spring auto-configuration via spring.factories
+
+      CHILD SERVICE USAGE
+        <dependency>
+             <groupId>com.me.learning.parent</groupId>
+            <artifactId>awsab-framework</artifactId>
+            <version>${awsab-framework.version}</version>
+        </dependency>
+
+      NOTE: This module does NOT contain a @SpringBootApplication.
+      It is a library JAR — no spring-boot:repackage goal.
+    ============================================================
+    -->
+
+    <parent>
+        <groupId>com.me.learning.parent</groupId>
+        <artifactId>awsab-parent</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../awsab-parent/pom.xml</relativePath>
+    </parent>
+
+
+    <!-- groupId/version are intentionally inherited from awsab-parent -->
+    <artifactId>awsab-framework</artifactId>
+    <name>awsab-framework</name>
+    <description>
+        Enterprise shared library for all AWSAB microservices.
+        Provides base classes, utilities, security helpers,
+        observability integration, and Spring auto-configuration.
+    </description>
+
+    <dependencies>
+
+        <!-- ════════════════════════════════════════════════
+             SPRING BOOT — all versions managed by parent BOM
+        ════════════════════════════════════════════════ -->
+
+        <!-- Core web (RestController, filters, interceptors) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- JPA / Hibernate (base entities, repositories) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!-- Validation (Bean Validation constraints) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jspecify</groupId>
+            <artifactId>jspecify</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+        </dependency>
+
+        <!-- Security (SecurityContext, principal extraction)
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency> -->
+
+        <!-- OAuth2 Resource Server (JWT token decoding)
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency> -->
+
+        <!-- ════════════════════════════════════════════════
+             OPENTELEMETRY
+             Services using the Java agent get SDK at runtime.
+             We only need the API here for custom span creation.
+        ════════════════════════════════════════════════ -->
+
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+        </dependency>
+
+        <!--
+            Starter is included intentionally so applications that depend on this
+            framework get OTel auto-configuration by default.
+        -->
+        <dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- Micrometer → OTel bridge (Actuator tracing) -->
+        <!--<dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-otel</artifactId>
+        </dependency>-->
+
+        <!-- Prometheus metrics endpoint -->
+        <!--<dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>-->
+
+        <!-- ════════════════════════════════════════════════
+             LOGGING
+        ════════════════════════════════════════════════ -->
+
+        <!-- Structured JSON logs for Loki ingestion -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+        </dependency>
+
+        <!-- ════════════════════════════════════════════════
+             CODE GENERATION (provided / optional)
+        ════════════════════════════════════════════════ -->
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+        </dependency>
+
+        <!-- ════════════════════════════════════════════════
+             PERSISTENCE UTILITIES
+        ════════════════════════════════════════════════ -->
+
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-relational</artifactId>
+        </dependency>
+        <!--
+            H2 is NOT included here.
+            Each microservice decides its own test database.
+            Include H2 only in test scope in child services.
+        -->
+
+        <!-- ════════════════════════════════════════════════
+             UTILITY LIBRARIES
+        ════════════════════════════════════════════════ -->
+
+        <!-- Apache Commons Lang (StringUtils, ObjectUtils etc.) -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+
+        <!-- ════════════════════════════════════════════════
+             TESTING (test scope — not shipped in JAR)
+        ════════════════════════════════════════════════ -->
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--<dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
+        </dependency>-->
+
+
+    </dependencies>
+
+
+    <build>
+        <plugins>
+
+            <!-- Compiler — annotation processors from pluginManagement -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+
+            <!-- Enforcer — Java/Maven version gate -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+            </plugin>
+
+            <!--
+                NOTE: spring-boot-maven-plugin is intentionally
+                EXCLUDED here.  This is a library JAR, not a
+                runnable Boot application.  The repackage goal
+                would break consumers that depend on this JAR.
+            -->
+
+            <!-- Unit tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+
+            <!-- Code coverage — disabled for this library module -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+
+            <!-- Attach sources JAR (so IDEs show framework source) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+
+            <!-- Attach Javadoc JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+
+            <!-- Git commit info in Actuator /info -->
+            <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>
