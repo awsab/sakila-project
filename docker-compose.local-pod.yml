@@ -1,0 +1,154 @@
+# Compose specification version.
+version: "3.9"
+
+# Logical name grouping all local containers for this stack.
+name: sakila-local-pod
+
+# ─────────────────────────────────────────────────────────────────────────────
+# RESPONSIBILITY SPLIT (industry-standard 12-Factor App approach):
+#
+#   Dockerfile  → ENV defaults: port, profile, Eureka URL for bare `docker run`
+#                 EXPOSE: documents the port (metadata only, never publishes it)
+#
+#   docker-compose → ONLY overrides that are specific to the compose network:
+#                    - EUREKA_INSTANCE_HOSTNAME: must use container DNS service name
+#                      (e.g. "catalog-service") NOT "localhost" which breaks routing
+#                    - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: must point to the
+#                      "eureka-registry" container name, not localhost
+#                    - ports: publishes container port to host (what EXPOSE cannot do)
+#
+#   Result: images work standalone with `docker run` AND inside compose without
+#           duplicating config in both places.
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  # Eureka service registry — all microservices register here for discovery.
+  eureka-registry:
+    build:
+      # Root context so parent/framework modules are available to Maven during build.
+      context: .
+      # Each module owns its own Dockerfile (industry standard for monorepos).
+      dockerfile: eureka-registry/Dockerfile
+    image: sakila/eureka-registry:local
+    container_name: eureka-registry
+    ports:
+      # Publish 8761 to host so the Eureka dashboard is reachable at http://localhost:8761
+      - "8761:8761"
+    environment:
+      # Override only: container must advertise itself by service name, not "localhost".
+      EUREKA_INSTANCE_HOSTNAME: eureka-registry
+      # All other env vars (SERVER_PORT, register-with-eureka, fetch-registry)
+      # are already defaulted correctly in eureka-registry/Dockerfile ENV.
+    restart: unless-stopped
+    networks:
+      - sakila-net
+
+  # Catalog REST API — manages film catalog data.
+  catalog-service:
+    build:
+      context: .
+      dockerfile: catalog-service/Dockerfile
+    image: sakila/catalog-service:local
+    container_name: catalog-service
+    depends_on:
+      # Start Eureka first so catalog can register on boot.
+      - eureka-registry
+    ports:
+      # Publish 8091 to host for direct API access / Swagger UI.
+      - "8091:8091"
+    environment:
+      # Override only: Eureka URL must use the container service name, not localhost.
+      # In a compose network, "eureka-registry" resolves to the registry container IP.
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-registry:8761/eureka/
+      # Register with the container's own DNS name so Eureka shows a reachable address.
+      EUREKA_INSTANCE_HOSTNAME: catalog-service
+      # SERVER_PORT and SPRING_PROFILES_ACTIVE already defaulted in catalog-service/Dockerfile.
+    restart: unless-stopped
+    networks:
+      - sakila-net
+
+  # Customer identity REST API — manages customer accounts.
+  customer-service:
+    build:
+      context: .
+      dockerfile: customer-service/Dockerfile
+    image: sakila/customer-service:local
+    container_name: customer-service
+    depends_on:
+      - eureka-registry
+    ports:
+      # Publish 8081; context-path is /customer-identity/api.
+      - "8081:8081"
+    environment:
+      # Override only: Eureka endpoint must use compose container DNS name.
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-registry:8761/eureka/
+      EUREKA_INSTANCE_HOSTNAME: customer-service
+      # SERVER_PORT=8081 and SPRING_PROFILES_ACTIVE=sit already set in Dockerfile.
+    restart: unless-stopped
+    networks:
+      - sakila-net
+
+  # Rental REST API — manages film rental transactions.
+  rental-service:
+    build:
+      context: .
+      dockerfile: rental-service/Dockerfile
+    image: sakila/rental-service:local
+    container_name: rental-service
+    depends_on:
+      - eureka-registry
+    ports:
+      # Publish 8082; context-path is /rental/api.
+      - "8082:8082"
+    environment:
+      # Override only: compose-network-specific Eureka endpoint.
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-registry:8761/eureka/
+      EUREKA_INSTANCE_HOSTNAME: rental-service
+    restart: unless-stopped
+    networks:
+      - sakila-net
+
+  # Inventory REST API — manages film/store inventory.
+  inventory-service:
+    build:
+      context: .
+      dockerfile: inventory-service/Dockerfile
+    image: sakila/inventory-service:local
+    container_name: inventory-service
+    depends_on:
+      - eureka-registry
+    ports:
+      # Publish 8083 (no port configured in inventory application.yaml; Dockerfile sets 8083).
+      - "8083:8083"
+    environment:
+      # Override only: Eureka endpoint via container DNS.
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-registry:8761/eureka/
+      EUREKA_INSTANCE_HOSTNAME: inventory-service
+    restart: unless-stopped
+    networks:
+      - sakila-net
+
+  # Standalone Spring Security demo — not registered with Eureka.
+  seucurity1:
+    build:
+      # seucurity1 uses its own spring-boot-starter-parent, no shared parent needed.
+      context: .
+      dockerfile: seucurity1/Dockerfile
+    image: sakila/seucurity1:local
+    container_name: seucurity1
+    ports:
+      # Publish 8084 (avoids clash with customer-service on 8081).
+      - "8084:8084"
+    # No environment overrides needed — SERVER_PORT=8084 already set in seucurity1/Dockerfile.
+    restart: unless-stopped
+    networks:
+      - sakila-net
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Internal bridge network — containers resolve each other by service name,
+# e.g. "eureka-registry", "catalog-service".  Nothing is exposed externally
+# except via the `ports:` mappings above.
+# ─────────────────────────────────────────────────────────────────────────────
+networks:
+  sakila-net:
+    driver: bridge

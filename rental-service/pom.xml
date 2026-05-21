@@ -16,6 +16,10 @@
     <name>rental-service</name>
     <description>rental-service</description>
 
+    <properties>
+        <spring-cloud.version>2025.1.1</spring-cloud.version>
+    </properties>
+
     <dependencies>
         <!--
             sakila-framework is the internal starter — it transitively provides:
@@ -32,6 +36,11 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
 
         <!-- Each service picks its own runtime DB — not in the framework -->
