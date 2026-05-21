@@ -10,10 +10,6 @@ package com.me.learning.framework;
 import java.time.Clock;
 import java.time.ZoneOffset;
 
-import tools.jackson.databind.DeserializationFeature;
-import tools.jackson.databind.SerializationFeature;
-import tools.jackson.databind.cfg.DateTimeFeature;
-
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -28,6 +24,10 @@ import com.me.learning.framework.web.config.SakilaLoggingInterceptor;
 import com.me.learning.framework.web.config.SakilaWebMvcConfigurer;
 import com.me.learning.framework.web.errors.GlobalExceptionHandler;
 import com.me.learning.framework.web.util.LinkHeaderUtil;
+
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.cfg.DateTimeFeature;
 
 
 /**

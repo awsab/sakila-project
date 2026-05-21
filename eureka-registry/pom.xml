@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!--<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>4.0.6</version>
+		<relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;
+	</parent>-->
+
+	<parent>
+		<groupId>com.me.learning.parent</groupId>
+		<artifactId>sakila-parent</artifactId>
+		<version>1.0.0</version>
+		<relativePath>../sakila-parent/pom.xml</relativePath>
+	</parent>
+
+	<groupId>com.me.learning.rental</groupId>
+	<artifactId>eureka-registry</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>eureka-registry</name>
+	<description>eureka-registry</description>
+
+	<properties>
+		<!-- Use newer Spring Cloud artifacts compatible with current Boot runtime classes -->
+		<spring-cloud.version>2025.1.1</spring-cloud.version>
+	</properties>
+
+	<!--
+		Use dependency versions from sakila-parent.
+		That parent already imports Spring Boot + Spring Cloud BOMs and keeps them aligned.
+	-->
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>enforce-versions</id>
+						<configuration>
+							<rules>
+								<requireMavenVersion>
+									<message>sakila requires Maven ${maven.version} or higher.</message>
+									<version>[${maven.version},)</version>
+								</requireMavenVersion>
+								<requireJavaVersion>
+									<message>sakila requires Java ${java.version}.</message>
+									<version>[${java.version},)</version>
+								</requireJavaVersion>
+								<requireUpperBoundDeps>
+									<excludes>
+										<exclude>org.apache.httpcomponents:httpclient</exclude>
+										<exclude>com.google.errorprone:error_prone_annotations</exclude>
+										<exclude>org.glassfish.hk2:hk2-api</exclude>
+										<exclude>com.google.guava:guava</exclude>
+										<exclude>com.fasterxml.woodstox:woodstox-core</exclude>
+									</excludes>
+								</requireUpperBoundDeps>
+							</rules>
+						</configuration>
+					</execution>
+					<execution>
+						<id>enforce-dependency-convergence</id>
+						<configuration>
+							<rules>
+								<dependencyConvergence>
+									<excludes>
+										<exclude>org.apache.httpcomponents:httpclient</exclude>
+										<exclude>com.google.errorprone:error_prone_annotations</exclude>
+										<exclude>org.glassfish.hk2:hk2-api</exclude>
+										<exclude>com.google.guava:guava</exclude>
+										<exclude>com.fasterxml.woodstox:woodstox-core</exclude>
+									</excludes>
+								</dependencyConvergence>
+							</rules>
+							<fail>true</fail>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

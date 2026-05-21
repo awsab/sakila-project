@@ -30,6 +30,9 @@
 # ----------------------------------------------------------------------------
 
 set -euf
+# ---- Project JDK 25 override (no toolchain plugin needed) ----
+JAVA_HOME="${JAVA_HOME:-$HOME/.jdks/temurin-25.0.2}"
+export JAVA_HOME
 [ "${MVNW_VERBOSE-}" != debug ] || set -x
 
 # OS specific support.

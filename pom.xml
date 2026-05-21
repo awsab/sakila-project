@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.sakila</groupId>
+    <artifactId>sakila-project</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>sakila-project</name>
+    <description>Parent project for Sakila microservices</description>
+
+    <properties>
+        <java.version>25</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.compiler.source>${java.version}</java.compiler.source>
+        <java.compiler.target>${java.version}</java.compiler.target>
+    </properties>
+
+    <modules>
+        <module>sakila-parent</module>
+        <module>sakila-framework</module>
+        <module>catalog-service</module>
+        <module>customer-service</module>
+        <module>inventory-service</module>
+        <module>rental-service</module>
+    </modules>
+</project>

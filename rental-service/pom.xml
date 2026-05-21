@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.me.learning.parent</groupId>
+        <artifactId>sakila-parent</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../sakila-parent/pom.xml</relativePath>
+    </parent>
+
+    <groupId>com.me.learning.rental</groupId>
+    <artifactId>rental-service</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>rental-service</name>
+    <description>rental-service</description>
+
+    <dependencies>
+        <!--
+            sakila-framework is the internal starter — it transitively provides:
+            spring-boot-starter-web, spring-boot-starter-data-jpa,
+            spring-boot-starter-validation, mapstruct, jspecify, commons-lang3,
+            logstash-logback-encoder, spring-security-core, spring-data-relational.
+        -->
+        <dependency>
+            <groupId>com.me.learning.parent</groupId>
+            <artifactId>sakila-framework</artifactId>
+        </dependency>
+
+        <!-- OpenAPI / Swagger UI — not in the framework; each service opts in -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+        </dependency>
+
+        <!-- Each service picks its own runtime DB — not in the framework -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- ════════════════════════════════════════════════
+             CODE GENERATION
+             'provided' scope is NOT transitive — must be declared
+             explicitly in every module that uses these annotations.
+        ════════════════════════════════════════════════ -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-processor</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- ════════════════════════════════════════════════
+             TESTING — 'test' scope is NOT transitive.
+        ════════════════════════════════════════════════ -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- REST Assured — full end-to-end HTTP integration tests -->
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>json-path</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Compiler — annotation processors from pluginManagement -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+
+            <!-- Enforcer — Java/Maven version gate -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+            </plugin>
+
+            <!-- Spring Boot Maven Plugin -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+
+            <!-- Unit tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+
+            <!--
+                Integration tests (*IT.java) run via Failsafe.
+                classesDirectory must point to the raw target/classes folder
+                because spring-boot-maven-plugin repackages the JAR into a fat
+                Boot JAR whose nested BOOT-INF/classes is not visible to the
+                standard Failsafe classloader.
+                -Djava.net.useSystemProxies=false prevents REST Assured's Groovy
+                runtime from picking up a system proxy with a null scheme that
+                causes ConcurrentHashMap.get(null) NPE on Java 17+.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <classesDirectory>${project.build.outputDirectory}</classesDirectory>
+                    <argLine>@{argLine} -Xmx1024m -Djava.net.useSystemProxies=false</argLine>
+                </configuration>
+            </plugin>
+
+            <!-- Code coverage -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <configuration>
+                    <skip>false</skip>
+                    <includes>
+                        <include>com/me/learning/rental/service/**</include>
+                        <include>com/me/learning/rental/controller/**</include>
+                    </includes>
+                </configuration>
+            </plugin>
+
+            <!-- Attach sources JAR (so IDEs show service source) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+
+            <!-- Attach Javadoc JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+            </plugin>
+
+            <!-- Git commit info in Actuator /info -->
+            <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>

@@ -1,9 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="JAVA_MODULE" version="4">
-  <component name="NewModuleRootManager" inherit-compiler-output="true">
-    <exclude-output />
-    <content url="file://$MODULE_DIR$" />
-    <orderEntry type="inheritedJdk" />
-    <orderEntry type="sourceFolder" forTests="false" />
+  <component name="AdditionalModuleElements">
+    <content url="file://$PROJECT_DIR$">
+      <excludeFolder url="file://$PROJECT_DIR$/.git" />
+      <excludeFolder url="file://$PROJECT_DIR$/.idea" />
+    </content>
+    <content url="file://$PROJECT_DIR$/catalog-service">
+      <sourceFolder url="file://$PROJECT_DIR$/catalog-service/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$PROJECT_DIR$/catalog-service/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$PROJECT_DIR$/catalog-service/src/test/java" isTestSource="true" />
+      <excludeFolder url="file://$PROJECT_DIR$/catalog-service/target" />
+    </content>
+    <content url="file://$PROJECT_DIR$/customer-service">
+      <sourceFolder url="file://$PROJECT_DIR$/customer-service/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$PROJECT_DIR$/customer-service/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$PROJECT_DIR$/customer-service/src/test/java" isTestSource="true" />
+      <excludeFolder url="file://$PROJECT_DIR$/customer-service/target" />
+    </content>
+    <content url="file://$PROJECT_DIR$/inventory-service">
+      <sourceFolder url="file://$PROJECT_DIR$/inventory-service/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$PROJECT_DIR$/inventory-service/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$PROJECT_DIR$/inventory-service/src/test/java" isTestSource="true" />
+      <excludeFolder url="file://$PROJECT_DIR$/inventory-service/target" />
+    </content>
+    <content url="file://$PROJECT_DIR$/rental-service">
+      <sourceFolder url="file://$PROJECT_DIR$/rental-service/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$PROJECT_DIR$/rental-service/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$PROJECT_DIR$/rental-service/src/test/java" isTestSource="true" />
+      <excludeFolder url="file://$PROJECT_DIR$/rental-service/target" />
+    </content>
+    <content url="file://$PROJECT_DIR$/sakila-framework">
+      <sourceFolder url="file://$PROJECT_DIR$/sakila-framework/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$PROJECT_DIR$/sakila-framework/src/main/resources" type="java-resource" />
+      <sourceFolder url="file://$PROJECT_DIR$/sakila-framework/src/test/java" isTestSource="true" />
+      <excludeFolder url="file://$PROJECT_DIR$/sakila-framework/target" />
+    </content>
+  </component>
+  <component name="CheckStyle-IDEA-Module" serialisationVersion="2">
+    <option name="activeLocationsIds" />
   </component>
 </module>

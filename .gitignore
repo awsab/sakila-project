@@ -1,0 +1,82 @@
+# --- Maven / Java build output ---
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Keep source/resource folders named target/build if they ever exist
+!**/src/main/**/target/
+!**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# --- IDE / editors ---
+.idea/
+**/.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+**/.vscode/
+
+# Eclipse / STS
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+**/build/
+
+# --- OS files ---
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# --- Logs / runtime artifacts ---
+*.log
+**/*.log
+hs_err_pid*
+replay_pid*
+
+# --- Test/coverage/report outputs ---
+**/surefire-reports/
+**/failsafe-reports/
+**/jacoco.exec
+**/site/
+**/dependency-check/
+**/spotbugs/
+**/pmd/
+**/checkstyle-cachefile
+**/checkstyle-result.xml
+**/cpd.xml
+**/pmd.xml
+**/spotbugsXml.xml
+
+# --- Spring Initializr helper files ---
+**/HELP.md
+
+# --- Optional local temp files (repo-specific) ---
+build-output.txt
+**/verify-tail.log
+
+# --- Fast Request plugin artifacts ---
+.fastrequest
+**/.fastrequest
+
+# --- Markdown files ---
+*.md
+
+# --- Powershell files ---
+*.ps1
+*.psm1
+*.psd1

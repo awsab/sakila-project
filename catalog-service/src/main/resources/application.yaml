@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: catalog-service
+
+  datasource:
+    url: jdbc:h2:mem:catalogdb
+    driverClassName: org.h2.Driver
+    username: sa
+    password: password
+
+server:
+  port: 8091
+eureka:
+  client:
+    allow-redirects: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+    metadata-map:
+      instanceId: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+

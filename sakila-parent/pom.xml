@@ -105,67 +105,97 @@
         <jspecify.version>1.0.0</jspecify.version>
 
         <!-- ── Spring ─────────────────────────────────────── -->
+        <!--
+            spring-boot:  kept at 4.0.5 — next stable is 4.1.0 (currently RC).
+            spring-cloud: 2025.0.x aligns with Spring Boot 4.0.x.
+                          Do NOT upgrade to 2025.1.x — it targets Spring Boot 4.1.x.
+        -->
         <spring-boot.version>4.0.5</spring-boot.version>
         <spring-cloud.version>2025.0.0</spring-cloud.version>
 
         <!-- ── API / Web ───────────────────────────────────── -->
-        <springdoc-openapi.version>2.8.0</springdoc-openapi.version>
+        <!--
+            springdoc-openapi 3.x is required for Spring Boot 4.x.
+            springdoc 2.x only supported Spring Boot 3.x.
+        -->
+        <springdoc-openapi.version>3.0.3</springdoc-openapi.version>
 
         <!-- ── Logging ────────────────────────────────────── -->
-        <logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
+        <!--
+            logstash-logback-encoder 9.0 requires Logback 1.5+ (provided by Spring Boot 4).
+        -->
+        <logstash-logback-encoder.version>9.0</logstash-logback-encoder.version>
+
+        <!-- ── Servlet Container ──────────────────────────── -->
+        <!--
+            Tomcat 11.0.21 fixes 3 CVEs present in 11.0.20 (managed by Spring Boot 4.0.5 BOM):
+              CVE-2026-34487 (HIGH)  – K8s bearer token leaked into log file
+              CVE-2026-34483 (HIGH)  – JsonAccessLogValve output-escaping flaw
+              CVE-2026-34500 (MEDIUM)– CLIENT_CERT auth bypass with FFM soft-fail off
+            Remove this override once Spring Boot upgrades its managed Tomcat to 11.0.21+.
+        -->
+        <tomcat.version>11.0.21</tomcat.version>
 
         <!-- ── Utilities ──────────────────────────────────── -->
-        <commons-lang3.version>3.18.0</commons-lang3.version>
+        <commons-lang3.version>3.20.0</commons-lang3.version>
 
         <!-- ── Persistence ────────────────────────────────── -->
         <!--
-            hibernate-processor is the Hibernate 7.x renamed annotation processor (was hibernate-jpamodelgen).
-            The Spring Boot 4.x BOM manages hibernate-core at this same version but does NOT explicitly
-            pin hibernate-processor in its dependencyManagement — so we align the version here manually.
+            hibernate-processor: stay on 7.x stable (8.0.0.Alpha1 is not production-ready).
+            Spring Boot 4.x BOM manages Hibernate at this same 7.x stream.
         -->
         <hibernate-processor.version>7.2.7.Final</hibernate-processor.version>
 
         <!-- ── Code generation ────────────────────────────── -->
+        <!--
+            mapstruct 1.7.0.Beta1 is available but NOT production-ready — keep 1.6.x.
+        -->
         <mapstruct.version>1.6.2</mapstruct.version>
-        <lombok.version>1.18.42</lombok.version>
+        <!-- lombok.version intentionally omitted — managed by spring-boot-dependencies BOM -->
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
 
         <!-- ── Testing ────────────────────────────────────── -->
-        <testcontainers.version>1.20.4</testcontainers.version>
-        <archunit.version>1.3.0</archunit.version>
-        <wiremock.version>3.10.0</wiremock.version>
-        <awaitility.version>4.2.2</awaitility.version>
-        <mockito.version>5.14.2</mockito.version>
         <!--
-            REST Assured: version is also managed by spring-boot-dependencies BOM.
-            Declared here explicitly so child modules can override with a single
-            property override if a newer patch is needed:
-                <rest-assured.version>5.5.1</rest-assured.version>
-            Modules that do NOT need REST Assured simply omit the dependency —
-            declaring it in dependencyManagement never forces it on anyone.
+            testcontainers: Testcontainers 2.0.x is a major rewrite with breaking API
+            changes; stay on 1.x until a full migration is planned.
+            wiremock: 4.0.0-beta.32 is still in beta; keep stable 3.x.
+        -->
+        <testcontainers.version>1.20.4</testcontainers.version>
+        <archunit.version>1.4.2</archunit.version>
+        <wiremock.version>3.10.0</wiremock.version>
+        <awaitility.version>4.3.0</awaitility.version>
+        <!-- mockito.version intentionally omitted — managed by spring-boot-dependencies BOM -->
+        <!--
+            rest-assured: io.rest-assured:rest-assured and io.rest-assured:json-path are NOT
+            managed by spring-boot-dependencies 4.x BOM (which only manages com.jayway.jsonpath:json-path).
+            Pin the version here so child modules can declare both without <version>.
         -->
         <rest-assured.version>6.0.0</rest-assured.version>
 
         <!-- ── Security ───────────────────────────────────── -->
-        <owasp-dependency-check.version>10.0.4</owasp-dependency-check.version>
+        <owasp-dependency-check.version>12.2.1</owasp-dependency-check.version>
 
         <!-- ── Maven plugins ──────────────────────────────── -->
+        <!--
+            maven-compiler-plugin: 4.0.0-betaX is not stable — keep 3.13.0 (latest stable).
+            maven-deploy/resources/source/site plugins: 4.0.0-betaX/M16 are pre-release — keep 3.x.
+        -->
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
-        <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
-        <maven-failsafe-plugin.version>3.5.2</maven-failsafe-plugin.version>
+        <maven-surefire-plugin.version>3.5.5</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>3.5.5</maven-failsafe-plugin.version>
         <maven-deploy-plugin.version>3.1.3</maven-deploy-plugin.version>
-        <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
-        <maven-javadoc-plugin.version>3.11.1</maven-javadoc-plugin.version>
+        <maven-enforcer-plugin.version>3.6.2</maven-enforcer-plugin.version>
+        <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
         <maven-resources-plugin.version>3.3.1</maven-resources-plugin.version>
         <maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
         <maven-site-plugin.version>3.12.1</maven-site-plugin.version>
-        <maven-project-info-reports-plugin.version>3.7.0</maven-project-info-reports-plugin.version>
-        <maven-dependency-plugin.version>3.8.1</maven-dependency-plugin.version>
-        <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
-        <versions-maven-plugin.version>2.18.0</versions-maven-plugin.version>
-        <git-commit-id-maven-plugin.version>9.0.1</git-commit-id-maven-plugin.version>
-        <sonar-maven-plugin.version>4.0.0.4121</sonar-maven-plugin.version>
+        <maven-project-info-reports-plugin.version>3.9.0</maven-project-info-reports-plugin.version>
+        <maven-dependency-plugin.version>3.10.0</maven-dependency-plugin.version>
+        <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
+        <versions-maven-plugin.version>2.21.0</versions-maven-plugin.version>
+        <git-commit-id-maven-plugin.version>10.0.0</git-commit-id-maven-plugin.version>
+        <sonar-maven-plugin.version>5.6.0.6792</sonar-maven-plugin.version>
         <maven-pmd-plugin.version>3.28.0</maven-pmd-plugin.version>
         <spotbugs-maven-plugin.version>4.9.8.3</spotbugs-maven-plugin.version>
         <findsecbugs-plugin.version>1.12.0</findsecbugs-plugin.version>
@@ -219,6 +249,30 @@
                 <scope>import</scope>
             </dependency>
 
+            <!--
+                CVE overrides — explicit entries AFTER the BOM import take precedence.
+                Tomcat 11.0.21 fixes:
+                  CVE-2026-34487 (HIGH)  – K8s bearer token leaked into log file
+                  CVE-2026-34483 (HIGH)  – JsonAccessLogValve output-escaping flaw
+                  CVE-2026-34500 (MEDIUM)– CLIENT_CERT auth bypass with FFM soft-fail off
+                Remove once Spring Boot 4.x BOM ships Tomcat 11.0.21+.
+            -->
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-core</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-el</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat.embed</groupId>
+                <artifactId>tomcat-embed-websocket</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+
             <!-- ── Spring Cloud BOM -->
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
@@ -237,11 +291,10 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- ── opentelemetry starter which is supporting native spring boot 4  -->
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter-opentelemetry</artifactId>
-            </dependency>
+            <!--
+                spring-boot-starter-opentelemetry — version managed by spring-boot-dependencies BOM.
+                Child modules declare WITHOUT <version>.
+            -->
 
             <!-- Internal shared starter/framework coordinate -->
             <dependency>
@@ -307,12 +360,7 @@
                 <version>${commons-lang3.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
-                <optional>true</optional>
-            </dependency>
+            <!-- lombok — version managed by spring-boot-dependencies BOM; child modules declare without <version> -->
 
             <dependency>
                 <groupId>org.mapstruct</groupId>
@@ -383,30 +431,9 @@
             </dependency>
 
             <!--
-                REST Assured — HTTP integration testing DSL
-                ─────────────────────────────────────────────────────────────
-                Version is managed here (and also by spring-boot-dependencies BOM).
-                This entry does NOT add the dependency to any module automatically.
-
-                To USE in a child module  →  declare WITHOUT <version>:
-                    <dependency>
-                        <groupId>io.rest-assured</groupId>
-                        <artifactId>rest-assured</artifactId>
-                        <scope>test</scope>
-                    </dependency>
-                    <dependency>
-                        <groupId>io.rest-assured</groupId>
-                        <artifactId>json-path</artifactId>
-                        <scope>test</scope>
-                    </dependency>
-
-                To SKIP in a module  →  simply do not declare it.
-
-                To OVERRIDE version in one module only:
-                    <properties>
-                        <rest-assured.version>5.5.1</rest-assured.version>
-                    </properties>
-                ─────────────────────────────────────────────────────────────
+                REST Assured — io.rest-assured artifacts are NOT in spring-boot-dependencies 4.x BOM.
+                (That BOM only manages com.jayway.jsonpath:json-path, a different coordinate.)
+                Explicit management here lets child modules declare both without <version>.
             -->
             <dependency>
                 <groupId>io.rest-assured</groupId>
@@ -414,7 +441,6 @@
                 <version>${rest-assured.version}</version>
                 <scope>test</scope>
             </dependency>
-
             <dependency>
                 <groupId>io.rest-assured</groupId>
                 <artifactId>json-path</artifactId>
@@ -453,6 +479,9 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>${maven-compiler-plugin.version}</version>
                     <configuration>
+                        <compilerArgs>
+                            <arg>-parameters</arg>
+                        </compilerArgs>
                         <release>${java.version}</release>
                         <source>${maven.compiler.source}</source>
                         <target>${maven.compiler.target}</target>
@@ -470,9 +499,9 @@
                         <annotationProcessorPaths>
                             <!-- ORDER MATTERS: lombok before mapstruct, binding last -->
                             <path>
+                                <!-- version resolved from spring-boot-dependencies BOM via annotationProcessorPathsUseDepMgmt -->
                                 <groupId>org.projectlombok</groupId>
                                 <artifactId>lombok</artifactId>
-                                <version>${lombok.version}</version>
                             </path>
                             <path>
                                 <groupId>org.mapstruct</groupId>
@@ -667,7 +696,8 @@
                     <version>${maven-failsafe-plugin.version}</version>
                     <configuration>
                         <runOrder>alphabetical</runOrder>
-                        <argLine>@{argLine} -Xmx1024m</argLine>
+                        <!-- -XX:+EnableDynamicAgentLoading silences the Mockito self-attach warning on Java 21+ -->
+                        <argLine>@{argLine} -Xmx1024m -XX:+EnableDynamicAgentLoading</argLine>
                     </configuration>
                     <executions>
                         <execution>
@@ -744,8 +774,8 @@
                     <version>${maven-checkstyle-plugin.version}</version>
                     <configuration>
                         <!-- Parent-enforced rules: every child module inherits the same policy. -->
-                        <configLocation>../sakila-parent/checkstyle/awsab-checkstyle.xml</configLocation>
-                        <suppressionsLocation>../sakila-parent/checkstyle/awsab-checkstyle-suppressions.xml</suppressionsLocation>
+                        <configLocation>../sakila-parent/checkstyle/sakila-checkstyle.xml</configLocation>
+                        <suppressionsLocation>../sakila-parent/checkstyle/sakila-checkstyle-suppressions.xml</suppressionsLocation>
                         <suppressionsFileExpression>checkstyle.suppressions.file</suppressionsFileExpression>
                         <includeTestSourceDirectory>true</includeTestSourceDirectory>
                         <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
@@ -987,43 +1017,6 @@
     ══════════════════════════════════════════════════════ -->
 
     <profiles>
-
-        <!-- ── OTEL_MANUAL_SDK (opt-in) ─────────────────────
-             For services that intentionally wire SDK/exporter manually.
-             Do not combine this mode with Java agent auto-instrumentation.
-        ─────────────────────────────────────────────────── -->
-        <profile>
-            <id>OTEL_MANUAL_SDK</id>
-            <dependencyManagement>
-                <dependencies>
-                    <dependency>
-                        <groupId>io.opentelemetry</groupId>
-                        <artifactId>opentelemetry-sdk</artifactId>
-                    </dependency>
-                    <dependency>
-                        <groupId>io.opentelemetry</groupId>
-                        <artifactId>opentelemetry-exporter-otlp</artifactId>
-                    </dependency>
-                </dependencies>
-            </dependencyManagement>
-        </profile>
-
-        <!-- ── OTEL_MICROMETER_BRIDGE (opt-in) ─────────────
-             Use only when a service intentionally follows the Micrometer bridge path
-             instead of the OpenTelemetry Spring starter path.
-        ─────────────────────────────────────────────────── -->
-        <profile>
-            <id>OTEL_MICROMETER_BRIDGE</id>
-            <dependencyManagement>
-                <dependencies>
-                    <dependency>
-                        <groupId>io.micrometer</groupId>
-                        <artifactId>micrometer-tracing-bridge-otel</artifactId>
-                    </dependency>
-                </dependencies>
-            </dependencyManagement>
-        </profile>
-
         <!-- ── SIT (default) ──────────────────────────────
              • Unit tests run with full parallelism
              • Integration tests run via Failsafe

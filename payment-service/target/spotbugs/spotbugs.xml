@@ -1,2 +1,0 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<BugCollection version='4.9.3' threshold='medium' effort='max'><Error></Error><Project><SrcDir>C:\Ramu\GitHub_Repo\sakila-project\payment-service\src\main\java</SrcDir><SrcDir>C:\Ramu\GitHub_Repo\sakila-project\payment-service\target\generated-sources\annotations</SrcDir><SrcDir>C:\Ramu\GitHub_Repo\sakila-project\payment-service\src\test\java</SrcDir><SrcDir>C:\Ramu\GitHub_Repo\sakila-project\payment-service\target\generated-test-sources\test-annotations</SrcDir></Project></BugCollection>

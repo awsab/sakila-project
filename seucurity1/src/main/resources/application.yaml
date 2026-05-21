@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: seucurity1
+
+server:
+  port: 8081

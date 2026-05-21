@@ -28,6 +28,8 @@
 @REM ----------------------------------------------------------------------------
 
 @IF "%__MVNW_ARG0_NAME__%"=="" (SET __MVNW_ARG0_NAME__=%~nx0)
+@REM ---- Project JDK 25 override (no toolchain plugin needed) ----
+@SET JAVA_HOME=C:\Users\Prabakaran.Ramu\.jdks\temurin-25.0.2
 @SET __MVNW_CMD__=
 @SET __MVNW_ERROR__=
 @SET __MVNW_PSMODULEP_SAVE=%PSModulePath%

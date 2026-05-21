@@ -1,0 +1,183 @@
+# ============================================================
+#  rental-service — Spring Boot 4 configuration
+# ============================================================
+
+# ── Application identity ─────────────────────────────────────
+spring:
+  application:
+    name: rental-service
+
+  # ── Profiles ───────────────────────────────────────────────
+  profiles:
+    active: sit          # overridden by Maven profile: -P UAT / -P PROD
+
+  # ── DataSource (H2 in-memory for local / SIT / UAT) ────────
+  datasource:
+    url: "jdbc:h2:mem:sakiladb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;NON_KEYWORDS=VALUE;MODE=MySQL"
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+    hikari:
+      pool-name: RentalHikariPool
+      maximum-pool-size: 10
+      minimum-idle: 2
+      idle-timeout: 30000          # 30 s
+      connection-timeout: 20000    # 20 s
+      max-lifetime: 1800000        # 30 min
+
+  # ── H2 console (dev / SIT only — disable in PROD) ──────────
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: false    # localhost-only access
+
+  # ── JPA / Hibernate ─────────────────────────────────────────
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    open-in-view: false            # avoids lazy-load outside tx; N+1 guard
+    show-sql: false                # use logging.level for SQL visibility
+    hibernate:
+      ddl-auto: create-drop        # recreate schema on start; use validate in PROD
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          time_zone: UTC
+        query:
+          plan_cache_max_size: 2048
+
+  # ── Jackson ─────────────────────────────────────────────────
+  jackson:
+    time-zone: UTC
+    default-property-inclusion: non_null
+
+# ── Server ────────────────────────────────────────────────────
+server:
+  port: 8082
+  servlet:
+    context-path: /rental/api
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/plain
+    min-response-size: 2048
+  error:
+    include-message: always        # expose message in error response
+    include-binding-errors: always
+    include-stacktrace: never      # never leak stack traces to clients
+
+# ── SpringDoc / Swagger UI ────────────────────────────────────
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    display-request-duration: true
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+  show-actuator: false
+  default-produces-media-type: application/json
+
+# ── Logging ───────────────────────────────────────────────────
+logging:
+  level:
+    root: INFO
+    com.me.learning.rental: DEBUG
+    # Hibernate SQL + bind-parameter tracing (set to TRACE to see values)
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: WARN
+    # Spring Web request mapping (verbose — keep at WARN in PROD)
+    org.springframework.web: WARN
+    org.springframework.security: WARN
+  pattern:
+    # Human-readable console pattern; replace with JSON appender for Loki in PROD
+    console: >-
+      %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level
+      [%X{traceId:-0},%X{spanId:-0}] %logger{40} - %msg%n
+
+---
+# ============================================================
+#  Profile: sit  (default — full tests + coverage gate)
+# ============================================================
+spring:
+  config:
+    activate:
+      on-profile: sit
+
+  h2:
+    console:
+      enabled: true
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+logging:
+  level:
+    com.me.learning.rental: DEBUG
+    org.hibernate.SQL: DEBUG
+
+---
+# ============================================================
+#  Profile: uat  (full tests, relaxed coverage gate)
+# ============================================================
+spring:
+  config:
+    activate:
+      on-profile: uat
+
+  h2:
+    console:
+      enabled: true
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+logging:
+  level:
+    com.me.learning.rental: DEBUG
+    org.hibernate.SQL: WARN
+
+---
+# ============================================================
+#  Profile: prod  (tests skipped, OWASP scan, no H2 console)
+# ============================================================
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  # Override datasource for a real DB in PROD — values injected via env vars
+  datasource:
+    url: ${DB_URL}
+    driver-class-name: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+
+  h2:
+    console:
+      enabled: false               # never expose H2 console in production
+
+  jpa:
+    database-platform: ${DB_PLATFORM:org.hibernate.dialect.MySQLDialect}
+    hibernate:
+      ddl-auto: validate           # schema managed by Flyway/Liquibase in PROD
+    show-sql: false
+
+logging:
+  level:
+    root: WARN
+    com.me.learning.rental: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.orm.jdbc.bind: WARN
+

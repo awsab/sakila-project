@@ -14,11 +14,15 @@
 -->
 <configuration scan="true" scanPeriod="30 seconds">
 
+    <!-- Resolve Spring Boot properties explicitly for use in JSON fields -->
+    <springProperty scope="context" name="serviceName" source="spring.application.name" defaultValue="evisa-unknown"/>
+    <springProperty scope="context" name="activeEnv" source="spring.profiles.active" defaultValue="default"/>
+
     <!-- ── Console / STDOUT appender (structured JSON) ── -->
     <appender name="STDOUT_JSON" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LogstashEncoder">
             <!-- Service identification fields — set via application.yml -->
-            <customFields>{"service":"${spring.application.name:-evisa-unknown}","env":"${spring.profiles.active:-default}"}</customFields>
+            <customFields>{"service":"${serviceName}","env":"${activeEnv}"}</customFields>
             <!-- Include all MDC fields as top-level JSON properties -->
             <includeMdcKeyName>traceId</includeMdcKeyName>
             <includeMdcKeyName>spanId</includeMdcKeyName>
